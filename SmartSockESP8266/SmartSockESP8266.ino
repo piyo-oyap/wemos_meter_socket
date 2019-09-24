@@ -17,6 +17,7 @@
 //const char* password = STAPSK;
 
 char data[BUFFERLEN] = {};
+char dataTemp[BUFFERLEN] = {};
 //bool receivedData = false;                           // flag to retry fetching the data if there's no response in the last call
 
 
@@ -31,11 +32,12 @@ bool handleFileRead(String path);       // send the right file to the client (if
 
 void handleData() {
   Serial.println("request: /data");
-  server.send(200, "text/plain", data);
+  strcpy(dataTemp, data);
+  server.send(200, "text/plain", dataTemp);
 }
 
 void handleToggle() {
-  Serial.print("!");
+  Serial.print('\x1A');
   server.send(200, "text/plain", "");
 }
 
