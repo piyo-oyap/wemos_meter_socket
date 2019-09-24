@@ -7,7 +7,7 @@
 bool relayPower = false, swState = false;
 int power_int = EEPROM.read(0);
 const int input= 6, sw = 7;
-float time_period = 0, Voltage=0, Current=0, Frequency = 0, Power=0, Energy = 0, PF = 0;
+float time_period = 0.0, Voltage=0.0, Current=0.0, Frequency = 0.0, Power=0.0, Energy = 0.0, PF = 0.0;
 char str[30];
 
 PZEM004Tv30 pzem(&Serial1);
@@ -34,21 +34,29 @@ void loop() {
     }
   }
 #endif
-  Voltage = pzem.voltage();
-  Current = pzem.current();
-  Energy  = pzem.energy();
-  Power = pzem.power();
-  PF = pzem.pf();
-  Frequency = pzem.frequency();
+  updateValues();
   lcdPrint();
   echoOutput();
   sendRawData();
   delay(500);
-  if (Voltage == NAN) {
+}
 
-    Serial.print("NO CURRENT WIW");
+void updateValues() {
+  Voltage = pzem.voltage();
+  if (!isnan(Voltage))
+  {
+    Current = pzem.current();
+    Energy  = pzem.energy();
+    Power = pzem.power();
+    PF = pzem.pf();
+    Frequency = pzem.frequency();
+  } else {
+    Voltage = 0.0;
+    Current = 0.0;
+    Power = 0.0;
+    PF = 0.0;
+    Frequency = 0.0;
   }
-
 }
 
 void lcdPrint(){
@@ -60,23 +68,23 @@ void lcdPrint(){
   sprintf(str, "Volt:%s PF:%s", valBuffer, valBuffer2);
   lcd.print(str);
   lcd.setCursor(0,1);
-  dtostrf(Frequency, 5, 1, valBuffer);
-  sprintf(str, "Freq:%s  PI:%5d", valBuffer, power_int);
+  dtostrf(Frequency, 6, 1, valBuffer);
+  sprintf(str, "Freq:%s PI:%5d", valBuffer, power_int);
   lcd.print(str);
   lcd.setCursor(0,2);
-  dtostrf(Current, 7, 3, valBuffer);
-  sprintf(str, "Amp:%s", valBuffer);
+  dtostrf(Current, 6, 3, valBuffer);
+  sprintf(str, "Amp: %s         ", valBuffer);
   lcd.print(str);
   lcd.setCursor(0,3);
   dtostrf(Energy, 4, 3, valBuffer);
-  sprintf(str, "kWh:  %s",valBuffer);
+  sprintf(str, "kWh:  %s        ",valBuffer);
   lcd.print(str);
 }
 
 void echoOutput() {
   if (Serial3.available()) {
     String str = Serial3.readString();
-    if (str == "!")
+    if (str.indexOf('\x1A') >= 0)
     {
       toggle();
     #ifdef DEBUG
