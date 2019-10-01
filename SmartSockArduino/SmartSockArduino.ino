@@ -4,10 +4,10 @@
 #define DEBUG
 #define ESP Serial2
 
-volatile bool relayPower = true;
+bool relayPower = true;
 const uint8_t input= 6, sw = 7, btnToggle = 2, btnReset = 3;
 float Voltage=0.0, Current=0.0, Frequency = 0.0, Power=0.0, Energy = 0.0, PF = 0.0;
-char str[30];
+char str[30], ip[4][5] = {};
 
 PZEM004Tv30 pzem(&Serial1);
 LiquidCrystal_I2C lcd(0x27, 20, 4);
@@ -17,6 +17,7 @@ void setup() {
   ESP.begin(115200);
   lcd.begin();
   lcd.backlight();
+  lcd.noCursor();
   lcd.clear();
   pinMode(input, INPUT);
   pinMode(btnToggle, INPUT);
@@ -27,6 +28,7 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(btnToggle), btn_toggle_handler, FALLING);
   attachInterrupt(digitalPinToInterrupt(btnReset), btn_reset_handler, FALLING);
   #endif
+  clearIP();
 }
 //
 void loop() {
@@ -105,11 +107,11 @@ void lcdPrint(){
   lcd.print(str);
   lcd.setCursor(0,2);
   dtostrf(Current, 6, 3, valBuffer);
-  sprintf(str, "Amp: %s         ", valBuffer);
+  sprintf(str, "Amp: %s %-3s.%-3s.", valBuffer, ip[0], ip[1]);
   lcd.print(str);
   lcd.setCursor(0,3);
   dtostrf(Energy, 4, 3, valBuffer);
-  sprintf(str, "kWh:  %s        ",valBuffer);
+  sprintf(str, "kWh:  %s %-3s.%-4s",valBuffer, ip[2], ip[3]);
   lcd.print(str);
 }
 
@@ -117,7 +119,12 @@ void echoOutput() {
   if (ESP.available()) {
     String str = "";
     while(ESP.available()){
-      str+=(char)ESP.read();
+      char temp = (char)ESP.read();
+      if (temp == '\n') {
+        break;
+      } else {
+        str+=temp;
+      }
     }
     if (str.indexOf('\x1A') >= 0)
     {
@@ -131,11 +138,31 @@ void echoOutput() {
     #ifdef DEBUG
       Serial.println("resetted energy");
     #endif
-    } 
+    } else if (str.indexOf('\x12') >= 0) {
+        // disconnected
+        clearIP();
+    } else if (str.indexOf('\x11') >= 0) {
+      char * strPtr = strtok( str.c_str() + 1 , ".");
+      int i = 0;
+      while (i < 4 && strPtr != NULL) {
+        #ifdef DEBUG
+        Serial.println(strPtr);
+        #endif
+        strcpy( ip[i], strPtr);
+        strPtr = strtok(NULL, ".");
+        i++;
+      }
+    }
     else {
       Serial.println( str );
     }
       
+  }
+}
+
+void clearIP() {
+  for (int i = 0; i < 4; i++) {
+    strcpy(ip[i], "0");
   }
 }
 
@@ -148,9 +175,9 @@ void sendRawData() {
     ESP.print('!');
     ESP.print(Voltage);
     ESP.print(',');
-    ESP.print(Current);
-    ESP.print(',');
     ESP.print(Frequency);
+    ESP.print(',');
+    ESP.print(Current, 3);
     ESP.print(',');
     ESP.print(Energy, 3);
     ESP.print(',');

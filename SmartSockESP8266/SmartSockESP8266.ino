@@ -11,6 +11,7 @@
 //#define STAPSK  "truenibba"
 //#endif
 
+//#define DEBUG
 #define BUFFERLEN 80
 
 //const char* ssid = STASSID;
@@ -31,18 +32,20 @@ String getContentType(String filename); // convert the file extension to the MIM
 bool handleFileRead(String path);       // send the right file to the client (if it exists)
 
 void handleData() {
+  #ifdef DEBUG
   Serial.println("request: /data");
+  #endif
   strcpy(dataTemp, data);
   server.send(200, "text/plain", dataTemp);
 }
 
 void handleToggle() {
-  Serial.print('\x1A');
+  Serial.println('\x1A');
   server.send(200, "text/plain", "");
 }
 
 void handleReset() {
-  Serial.print('\x19');
+  Serial.println('\x19');
   server.send(200, "text/plain", "");
 }
 
@@ -51,6 +54,7 @@ void setup(void) {
   Serial.print("\n");
   wifiMulti.addAP("#teamChitoge", "truenibba");
   wifiMulti.addAP("Ganda & Cute Boarding House", "llaneta583");
+  wifiMulti.addAP("Meter Socket", "FabLab2.0");
 //  WiFi.mode(WIFI_STA);
 //  WiFi.begin(ssid, password);
 //  Serial.println("");
@@ -80,7 +84,10 @@ void checkConnection() {
   // Wait for connection
   while (wifiMulti.run() != WL_CONNECTED) {
     if (connectionWasAlive == true) {
-      Serial.print("Lost WiFi Connection ");
+      #ifdef DEBUG
+      Serial.println("Lost WiFi Connection ");
+      #endif
+      Serial.println('\x12');
       connectionWasAlive = false;
       server.close();
     }
@@ -88,16 +95,16 @@ void checkConnection() {
     delay(500);
   }
   if (connectionWasAlive == false) {
-    Serial.print("\nConnected to ");
+    #ifdef DEBUG
+    Serial.println("\nConnected to ");
     Serial.println(WiFi.SSID());
-    Serial.println(WiFi.localIP());
+    #endif
+    Serial.print('\x11');
+    Serial.print(WiFi.localIP());
+    Serial.print('\n');
     connectionWasAlive = true;
     server.begin();
   }
-//  Serial.println("");
-//  Serial.print("Connected to ");
-//  Serial.println(ssid);
-//  Serial.print("IP address: ");
 }
 
 void fetchData()
@@ -122,8 +129,10 @@ void fetchData()
         
       }
       data[i] = '\0';
+      #ifdef DEBUG
       if (i > 0)
         Serial.println("ESP: Data updated.");
+      #endif
     } 
   }
   
@@ -137,7 +146,9 @@ String getContentType(String filename) { // convert the file extension to the MI
 }
 
 bool handleFileRead(String path) { // send the right file to the client (if it exists)
+  #ifdef DEBUG
   Serial.println("handleFileRead: " + path);
+  #endif
   if (path.endsWith("/")) path += "index.html";         // If a folder is requested, send the index file
   String contentType = getContentType(path);            // Get the MIME type
   if (SPIFFS.exists(path)) {                            // If the file exists
@@ -146,6 +157,8 @@ bool handleFileRead(String path) { // send the right file to the client (if it e
     file.close();                                       // Then close the file again
     return true;
   }
+  #ifdef DEBUG
   Serial.println("\tFile Not Found");
+  #endif
   return false;                                         // If the file doesn't exist, return false
 }
