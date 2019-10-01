@@ -4,9 +4,9 @@
 
 #define DEBUG
 
-bool relayPower = false, swState = false;
+volatile bool relayPower = true;
 int power_int = EEPROM.read(0);
-const int input= 6, sw = 7;
+const uint8_t input= 6, sw = 7, btnToggle = 46, btnReset = 42;
 float time_period = 0.0, Voltage=0.0, Current=0.0, Frequency = 0.0, Power=0.0, Energy = 0.0, PF = 0.0;
 char str[30];
 
@@ -21,8 +21,12 @@ void setup() {
   lcd.backlight();
   lcd.clear();
   pinMode(input, INPUT);
+  pinMode(btnToggle, INPUT_PULLUP);
+  pinMode(btnReset, INPUT_PULLUP);
   pinMode(sw, OUTPUT);
-  digitalWrite(sw, HIGH);
+  digitalWrite(sw, LOW);
+  attachInterrupt(digitalPinToInterrupt(btnToggle), btn_toggle_handler, RISING);
+  attachInterrupt(digitalPinToInterrupt(btnReset), btn_reset_handler, RISING);
 }
 //
 void loop() {
@@ -121,4 +125,26 @@ void sendRawData() {
   Serial3.print(',');
   Serial3.print(relayPower);
   Serial3.print('\n');
+}
+
+void btn_toggle_handler()
+{
+ static unsigned long last_interrupt_time = 0;
+ unsigned long interrupt_time = millis();
+ if (interrupt_time - last_interrupt_time > 250)
+ {
+   toggle();
+ }
+ last_interrupt_time = interrupt_time;
+}
+
+void btn_reset_handler()
+{
+ static unsigned long last_interrupt_time = 0;
+ unsigned long interrupt_time = millis();
+ if (interrupt_time - last_interrupt_time > 250)
+ {
+   pzem.resetEnergy();
+ }
+ last_interrupt_time = interrupt_time;
 }
