@@ -41,6 +41,10 @@ void handleToggle() {
   server.send(200, "text/plain", "");
 }
 
+void handleReset() {
+  Serial.print('\x19');
+  server.send(200, "text/plain", "");
+}
 
 void setup(void) {
   Serial.begin(115200);
@@ -55,6 +59,7 @@ void setup(void) {
 
   server.on("/data", handleData);
   server.on("/toggle", handleToggle);
+  server.on("/reset", handleReset);
   
   server.onNotFound([]() {                              // If the client requests any URI
     if (!handleFileRead(server.uri()))                  // send it if it exists
@@ -96,22 +101,11 @@ void checkConnection() {
 }
 
 void fetchData()
-{
-//  if (Serial.available())
-//  {
-//    data = Serial.readString();
-//    Serial.print("data updated.\n");
-//    Serial.println(data);
-//  }
-
-
-  static unsigned int previousMillis = 0;
-  unsigned int currentMillis = millis();
-
-  if (currentMillis - previousMillis > 2000)
+{ 
+  static unsigned long lastMillis = 0;
+  unsigned long currentMillis = millis();
+  if (currentMillis - lastMillis > 200) 
   {
-    previousMillis = currentMillis;
-    
     int i = 0;
     if (Serial.available())
     {
@@ -130,7 +124,7 @@ void fetchData()
       data[i] = '\0';
       if (i > 0)
         Serial.println("ESP: Data updated.");
-    }
+    } 
   }
   
 }
