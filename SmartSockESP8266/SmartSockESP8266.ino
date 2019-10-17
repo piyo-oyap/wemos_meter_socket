@@ -39,8 +39,23 @@ void handleData() {
   server.send(200, "text/plain", dataTemp);
 }
 
-void handleToggle() {
+void handleToggleMain() {
   Serial.println('\x1A');
+  server.send(200, "text/plain", "");
+}
+
+void handleToggle1() {
+  Serial.println('\x1C');
+  server.send(200, "text/plain", "");
+}
+
+void handleToggle2() {
+  Serial.println('\x1D');
+  server.send(200, "text/plain", "");
+}
+
+void handleToggle3() {
+  Serial.println('\x1E');
   server.send(200, "text/plain", "");
 }
 
@@ -62,7 +77,10 @@ void setup(void) {
   SPIFFS.begin();                                       // Start the SPI Flash Files System
 
   server.on("/data", handleData);
-  server.on("/toggle", handleToggle);
+  server.on("/toggleMain", handleToggleMain);
+  server.on("/toggle1", handleToggle1);
+  server.on("/toggle2", handleToggle2);
+  server.on("/toggle3", handleToggle3);
   server.on("/reset", handleReset);
   
   server.onNotFound([]() {                              // If the client requests any URI

@@ -3,9 +3,10 @@
 
 #define DEBUG
 #define ESP Serial2
+#define SIM Serial3
 
-bool relayPower = true;
-const uint8_t input= 6, sw = 7, btnToggle = 2, btnReset = 3;
+bool relayMain = true, relay1 = true, relay2 = true, relay3 = true;
+const uint8_t input= 6, pSwMain = 11, pSw1 = 10, pSw2 = 9, pSw3 = 8, btnToggle = 2, btnReset = 3;
 float Voltage=0.0, Current=0.0, Frequency = 0.0, Power=0.0, Energy = 0.0, PF = 0.0;
 char str[30], ip[4][5] = {};
 
@@ -14,6 +15,7 @@ LiquidCrystal_I2C lcd(0x27, 20, 4);
 
 void setup() {
   Serial.begin(9600);
+  SIM.begin(9600);
   ESP.begin(115200);
   lcd.begin();
   lcd.backlight();
@@ -22,10 +24,13 @@ void setup() {
   pinMode(input, INPUT);
   pinMode(btnToggle, INPUT);
   pinMode(btnReset, INPUT);
-  pinMode(sw, OUTPUT);
-  digitalWrite(sw, LOW);
+  pinMode(pSwMain, OUTPUT);
+  pinMode(pSw1, OUTPUT);
+  pinMode(pSw2, OUTPUT);
+  pinMode(pSw3, OUTPUT);
+  digitalWrite(pSwMain, LOW);
   #ifdef INTERRUPT
-  attachInterrupt(digitalPinToInterrupt(btnToggle), btn_toggle_handler, FALLING);
+  attachInterrupt(digitalPinToInterrupt(btnToggle), btn_toggleMain_handler, FALLING);
   attachInterrupt(digitalPinToInterrupt(btnReset), btn_reset_handler, FALLING);
   #endif
   clearIP();
@@ -35,7 +40,7 @@ void loop() {
 #ifdef DEBUG
   if(Serial.available()){
     if(Serial.read()=='a'){
-      btn_toggle_handler();
+      btn_toggleMain_handler();
       Serial.println("Toggle");
     }
   }
@@ -46,7 +51,7 @@ void loop() {
 
   updateValues();
   lcdPrint();
-  echoOutput();
+  listenToESP();
   sendRawData();
   delay(100);
 }
@@ -68,7 +73,7 @@ void scanButtons() {
   if (lastStateToggle != currentStateToggle)
   {
     if (currentStateToggle == 0) {
-      btn_toggle_handler();
+      btn_toggleMain_handler();
     }
     lastStateToggle = currentStateToggle;
   }
@@ -115,7 +120,7 @@ void lcdPrint(){
   lcd.print(str);
 }
 
-void echoOutput() {
+void listenToESP() {
   if (ESP.available()) {
     String str = "";
     while(ESP.available()){
@@ -128,12 +133,17 @@ void echoOutput() {
     }
     if (str.indexOf('\x1A') >= 0)
     {
-      btn_toggle_handler();
+      btn_toggleMain_handler();
     #ifdef DEBUG
-      Serial.println("toggled");
+      Serial.println("toggled main");
     #endif
-    } else if (str.indexOf('\x19') >= 0)
-    {
+    } else if (str.indexOf('\x1C') >= 0) {
+      toggleSw1();
+    } else if (str.indexOf('\x1D') >= 0) {
+      toggleSw2();
+    } else if (str.indexOf('\x1E') >= 0) {
+      toggleSw3();
+    } else if (str.indexOf('\x19') >= 0) {
       btn_reset_handler();
     #ifdef DEBUG
       Serial.println("resetted energy");
@@ -183,25 +193,85 @@ void sendRawData() {
     ESP.print(',');
     ESP.print(PF);
     ESP.print(',');
-    ESP.print(relayPower);
+    ESP.print(relayMain);
+    ESP.print(',');
+    ESP.print(relay1);
+    ESP.print(',');
+    ESP.print(relay2);
+    ESP.print(',');
+    ESP.print(relay3);
     ESP.print('\n');
   }
   
 }
 
-void btn_toggle_handler()
+void btn_toggleMain_handler()
 {
  static unsigned long last_interrupt_time = 0;
  unsigned long interrupt_time = millis();
  
  if (interrupt_time - last_interrupt_time > 500)
  {
-   relayPower = !relayPower;
-   digitalWrite(sw, !relayPower);
+   relayMain = !relayMain;
+   digitalWrite(pSwMain, !relayMain);
   
   
    #ifdef DEBUG
-   Serial.println("ttriggered toggle interrupt");
+   Serial.println("t: triggered toggle main interrupt");
+   #endif
+ }
+ last_interrupt_time = interrupt_time;
+}
+
+void toggleSw1()
+{
+ static unsigned long last_interrupt_time = 0;
+ unsigned long interrupt_time = millis();
+ 
+ if (interrupt_time - last_interrupt_time > 500)
+ {
+   relay1 = !relay1;
+   digitalWrite(pSw1, !relay1);
+  
+  
+   #ifdef DEBUG
+   Serial.println("t: toggled switch 1");
+   #endif
+ }
+ last_interrupt_time = interrupt_time;
+}
+
+void toggleSw2()
+{
+ static unsigned long last_interrupt_time = 0;
+ unsigned long interrupt_time = millis();
+ 
+ if (interrupt_time - last_interrupt_time > 500)
+ {
+   relay2 = !relay2;
+   digitalWrite(pSw2, !relay2);
+  
+  
+   #ifdef DEBUG
+   Serial.println("t: toggled switch 2");
+   #endif
+ }
+ last_interrupt_time = interrupt_time;
+}
+
+void toggleSw3()
+{
+ static unsigned long last_interrupt_time = 0;
+ unsigned long interrupt_time = millis();
+ 
+ if (interrupt_time - last_interrupt_time > 500)
+ {
+   relay3 = !relay3;
+   digitalWrite(pSw3, !relay3);
+  
+  
+   #ifdef DEBUG
+   Serial.println("t: toggled switch 3");
    #endif
  }
  last_interrupt_time = interrupt_time;
