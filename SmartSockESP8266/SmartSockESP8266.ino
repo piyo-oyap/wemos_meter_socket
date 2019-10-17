@@ -68,6 +68,7 @@ void setup(void) {
   Serial.begin(115200);
   Serial.print("\n");
   wifiMulti.addAP("#teamChitoge", "truenibba");
+  wifiMulti.addAP("anon", "12345678");
   wifiMulti.addAP("Ganda & Cute Boarding House", "llaneta583");
   wifiMulti.addAP("Meter Socket", "FabLab2.0");
 //  WiFi.mode(WIFI_STA);
