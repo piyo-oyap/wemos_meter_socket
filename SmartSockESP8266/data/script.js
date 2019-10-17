@@ -1,5 +1,17 @@
-function toggleSwitch() {
-    fetch("toggle");
+function toggleSwitchMain() {
+    fetch("toggleMain");
+}
+
+function toggleSwitch1() {
+    fetch("toggle1");
+}
+
+function toggleSwitch2() {
+    fetch("toggle2");
+}
+
+function toggleSwitch3() {
+    fetch("toggle3");
 }
 
 function resetSwitch() {
@@ -20,32 +32,39 @@ function fetchData() {
     }
 }
 
+function setButtonState(id, state) {
+    if (state == 1) {
+        document.getElementById(id).className =
+            document.getElementById(id).className.replace
+                ( /(?:^|\s)button-off(?!\S)/g , '' );
+
+        if ( !(document.getElementById(id).className.match(/(?:^|\s)button-on(?!\S)/)) ) {
+            document.getElementById(id).className += " button-on";
+        }
+    } else {
+        document.getElementById(id).className =
+                document.getElementById(id).className.replace
+                    ( /(?:^|\s)button-on(?!\S)/g , '' );
+
+        if ( !(document.getElementById(id).className.match(/(?:^|\s)button-off(?!\S)/)) ) {
+            document.getElementById(id).className += " button-off";
+        }
+    }
+}
+
 function updateData(data) {
     data = data.split(",");
-    if (data.length == 6)
+    if (data.length === 9)
     {
         document.getElementById("txtVolts").innerHTML = data[0];
         document.getElementById("txtHz").innerHTML = data[1];
         document.getElementById("txtWatts").innerHTML = data[2];
         document.getElementById("txtKWh").innerHTML = data[3];
         document.getElementById("txtPower").innerHTML = data[4];
-        if (data[5] == 1) {
-            document.getElementById("btnToggleSwitch").className =
-                document.getElementById("btnToggleSwitch").className.replace
-                    ( /(?:^|\s)button-off(?!\S)/g , '' );
-
-            if ( !(document.getElementById("btnToggleSwitch").className.match(/(?:^|\s)button-on(?!\S)/)) ) {
-                document.getElementById("btnToggleSwitch").className += " button-on";
-            }
-        } else {
-            document.getElementById("btnToggleSwitch").className =
-                    document.getElementById("btnToggleSwitch").className.replace
-                        ( /(?:^|\s)button-on(?!\S)/g , '' );
-
-            if ( !(document.getElementById("btnToggleSwitch").className.match(/(?:^|\s)button-off(?!\S)/)) ) {
-                document.getElementById("btnToggleSwitch").className += " button-off";
-            }
-        }
+        setButtonState("btnToggleSwitchMain", data[5]);
+        setButtonState("btnToggleSwitch1", data[6]);
+        setButtonState("btnToggleSwitch2", data[7]);
+        setButtonState("btnToggleSwitch3", data[8]);
     }
 }
 

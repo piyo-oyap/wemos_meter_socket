@@ -5,81 +5,7 @@
     <title>Smart Socket</title>
     <link rel="stylesheet" href="pure-min.css">
     <link rel="stylesheet" href="grids-responsive-min.css">
-    <style>
-        body {
-            background: #111;
-            font-family: Arial, Helvetica, sans-serif;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .var-box {
-            background-color:cadetblue;
-            
-        }
-        .box-pad {
-            padding: 1em;
-        }
-        .btn {
-            margin: 2em auto;
-        }
-
-        .grid-pad {
-            padding: 0 1em;
-        }
-
-        .grid-cell-pad {
-            display:none;
-        }
-
-        @media screen and (min-width: 35.5em) {
-            .grid-cell-pad {
-            display:block;
-            }
-            
-            .grid-pad {
-                padding: 0 1em;
-            }
-        }
-
-        @media screen and (min-width: 64em) {
-            .grid-pad {
-                padding: 0 4em;
-            }
-        }
-
-        .bg-gray {
-            color: white;
-            /* background:#eee; */
-            background: #444;
-            border: 0px solid #bbb;
-            border-top-width: 1px;
-            border-bottom-width: 1px;
-        }
-        .textbox {
-            background: white;
-            color: black;
-            margin-right: 20px;
-            text-align: right;
-        }
-
-        .button-on,
-        .button-off {
-            color: white;
-            border-radius: 4px;
-            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
-        }
-
-        .button-on {
-            background: rgb(28, 184, 65); /* this is a green */
-        }
-
-        .button-off {
-            background: rgb(202, 60, 60); /* this is a maroon */
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="pure-g bg-gray grid-pad">
@@ -124,8 +50,24 @@
         </div>
         <div class="grid-cell-pad pure-u-sm-1-6 pure-u-md-1-4"><p class="box-pad"></p></div>
     </div>
-    <button class="pure-button btn button-off" id="btnToggleSwitch" onclick="toggleSwitch()">Turn On/Off AC Output</button>
-    <button class="pure-button btn pure-button-primary" id="btnResetSwitch" onclick="resetSwitch()">Reset Energy Counter</button>
+    <br>
+    <br>
+    <br>
+    <div class="pure-g grid-pad-btn">
+        <button class="pure-button pure-u-1 pure-u-md-11-36 btn button-off" id="btnToggleSwitch1" onclick="toggleSwitch1()">Turn On/Off Socket 1</button>
+        <div class="grid-cell-pad pure-u-1-24"></div>
+        <button class="pure-button pure-u-1 pure-u-md-11-36 btn button-off" id="btnToggleSwitch2" onclick="toggleSwitch2()">Turn On/Off Socket 2</button>
+        <div class="grid-cell-pad pure-u-1-24"></div>
+        <button class="pure-button pure-u-1 pure-u-md-11-36 btn button-off" id="btnToggleSwitch3" onclick="toggleSwitch3()">Turn On/Off Socket 3</button>
+    </div>
+    <br>
+    <div class="btn-row-pad"></div>
+    <div class="pure-g grid-pad-btn">
+        <button class="pure-button pure-u-1 pure-u-sm-10-24 btn button-off" id="btnToggleSwitchMain" onclick="toggleSwitchMain()">Turn On/Off AC Output</button>
+        <div class="grid-cell-pad pure-u-4-24"></div>
+        <button class="pure-button pure-u-1 pure-u-sm-10-24 btn pure-button-primary" id="btnResetSwitch" onclick="resetSwitch()">Reset Energy Counter</button>
+    </div>
+    
 
     <script src="script.js"></script>
 </body>
