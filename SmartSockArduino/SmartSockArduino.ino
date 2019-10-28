@@ -4,7 +4,7 @@
 #define DEBUG
 #define ESP Serial2
 #define sim Serial3
-#define NUM "+639503610262"
+#define NUM "+639475086307"
 
 bool relayMain = true, relay1 = true, relay2 = true, relay3 = true, smsReady = false;
 const uint8_t input= 6, pSwMain = 11, pSw1 = 10, pSw2 = 9, pSw3 = 8, btnToggle = 2, btnReset = 3;
