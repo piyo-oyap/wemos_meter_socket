@@ -2,6 +2,8 @@
 #include <WiFiClient.h>
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266WebServer.h>
+#include <EasyDDNS.h>
+#include "TinyUPnP.h"
 //#include <pgmspace.h>
 //#include "htmlpages.h"
 #include <FS.h>
@@ -21,8 +23,16 @@ char data[BUFFERLEN] = {};
 char dataTemp[BUFFERLEN] = {};
 //bool receivedData = false;                           // flag to retry fetching the data if there's no response in the last call
 
+#define LISTEN_PORT 80  // http://<IP>:<LISTEN_PORT>/?name=<your string>
+#define LEASE_DURATION 36000  // seconds
+#define FRIENDLY_NAME "MeterSocket"  // this name will appear in your router port forwarding section
+#define DDNS_USERNAME "dehechunac@matra.top"
+#define DDNS_PASSWORD "FabLab2.0"
+#define DDNS_DOMAIN "metersocket.ddns.net"
 
-ESP8266WebServer server(80);
+TinyUPnP tinyUPnP(20000);  // -1 means blocking, preferably, use a timeout value (ms)
+
+ESP8266WebServer server(LISTEN_PORT);
 ESP8266WiFiMulti wifiMulti;
 
 //const int led = 13;
@@ -89,11 +99,23 @@ void setup(void) {
       server.send(404, "text/plain", "404: Not Found"); // otherwise, respond with a 404 (Not Found) error
   });
 
-  server.begin();
+  checkConnection();
+
+  boolean portMappingAdded = false;
+  tinyUPnP.addPortMappingConfig(WiFi.localIP(), LISTEN_PORT, RULE_PROTOCOL_TCP, LEASE_DURATION, FRIENDLY_NAME);
+  while (!portMappingAdded) {
+    portMappingAdded = tinyUPnP.commitPortMappings();
+  
+    if (!portMappingAdded) {
+      delay(5000);  // 5 seconds before trying again
+    }
+  }
 }
 
 void loop(void) {
   checkConnection();
+  EasyDDNS.update(300000);
+  tinyUPnP.updatePortMappings(600000, NULL);  // 10 minutes
   server.handleClient();
   fetchData();
   delay(20);
